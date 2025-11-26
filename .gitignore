@@ -1,0 +1,76 @@
+### JVM ###
+*.class
+*.log
+*.ctxt
+*.jar
+*.war
+*.nar
+*.car
+hs_err_pid*
+replay_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+### Gradle ###
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### Kotlin ###
+*.kotlin_module
+
+### Spring Boot ###
+application-local.properties
+application-local.yml
+
+### Environment Files ###
+.env
+.env.*
+!.env.example
+
+### Temporary files ###
+*.tmp
+*.temp
+
+### OS ###
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+### Logs ###
+logs/
+*.log
+*.out
+
+### Bytecode ###
+bin/
+obj/
+
+### Other ###
+/node_modules/

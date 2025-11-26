@@ -1,0 +1,8 @@
+api:
+  auth:
+    minUsernameLength: 4    # Tamanho mínimo do nome de usuário
+    maxUsernameLength: 15   # Tamanho máximo do nome de usuário
+    minPasswordLength: 6    # Tamanho mínimo da senha
+    maxPasswordLength: 15   # Tamanho máximo da senha
+    maxAttempts: 5          # Número máximo de tentativas de login permitidas
+    lockoutMinutes: 5       # Tempo de bloqueio após exceder o limite de tentativas (em minutos)
