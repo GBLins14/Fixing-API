@@ -1,7 +1,11 @@
 FROM gradle:7.6.1-jdk17 AS builder
 WORKDIR /app
+
+ENV GRADLE_USER_HOME=/app/.gradle
+
 COPY . .
-RUN gradle clean build -x test --no-daemon
+
+RUN gradle --no-daemon clean build -x test
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
