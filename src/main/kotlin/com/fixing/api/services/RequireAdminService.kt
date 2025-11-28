@@ -1,14 +1,14 @@
 package com.fixing.api.services
 
-import com.fixing.api.models.Role
-import com.fixing.api.repositories.UserRepository
+import com.fixing.api.enums.Role
+import com.fixing.api.repositories.AccountRepository
 import com.fixing.api.security.JwtUtil
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
-class RequireAdminService(private val userRepository: UserRepository, private val jwtUtil: JwtUtil) {
+class RequireAdminService(private val accountRepository: AccountRepository, private val jwtUtil: JwtUtil) {
     fun validateAdmin(authHeader: String?): ResponseEntity<Any>? {
         if (authHeader.isNullOrBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("error" to "Header Authorization não enviado."))
@@ -25,7 +25,7 @@ class RequireAdminService(private val userRepository: UserRepository, private va
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("error" to "Token inválido ou expirado."))
         }
 
-        val account = userRepository.findByUsername(username)
+        val account = accountRepository.findByUsername(username)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(mapOf("error" to "Conta não encontrada."))
 

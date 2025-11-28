@@ -1,18 +1,21 @@
 package com.fixing.api.schemas
 
-import com.fixing.api.models.Role
-import com.fixing.api.models.Plan
+import com.fixing.api.enums.Plan
+import com.fixing.api.enums.Role
+import com.fixing.api.enums.TypeAccount
 import java.time.temporal.ChronoUnit
-//import com.fasterxml.jackson.annotation.JsonProperty
 
 data class UserSignUpSchema(
-   /* val cpf: String,
-    @JsonProperty(required = false)
-    val name: String? = null,*/
+    val typeAccount: TypeAccount,
+    val cpf: String,
+    val fullName: String,
     val username: String,
     val email: String,
-    /*val phone: String,*/
-    val password: String
+    val phone: String,
+    val password: String,
+    val fotoSelfie: String? = null,
+    val fotoRgFrente: String? = null,
+    val fotoRgVerso: String? = null
 )
 
 data class UserSignInSchema(

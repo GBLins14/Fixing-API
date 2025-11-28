@@ -1,14 +1,16 @@
 package com.fixing.api.controllers
 
 import com.fixing.api.configs.AuthConfig
+import com.fixing.api.enums.AccountStatus
+import com.fixing.api.enums.TypeAccount
 import com.fixing.api.models.CustomUserDetails
 import com.fixing.api.models.User
-import com.fixing.api.repositories.UserRepository
+import com.fixing.api.repositories.AccountRepository
 import com.fixing.api.schemas.UserSignInSchema
 import com.fixing.api.schemas.UserSignUpSchema
 import com.fixing.api.security.Hash
 import com.fixing.api.security.JwtUtil
-import com.fixing.api.utils.ValidatorUtil
+import com.fixing.api.services.ValidatorService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
@@ -25,7 +27,7 @@ fun checkDuplicate(value: Any?, message: String): ResponseEntity<Any>? {
 
 @RestController
 @RequestMapping("/auth")
-class AuthController(private val authConfig: AuthConfig, private val userRepository: UserRepository, private val jwtUtil: JwtUtil, private val bcrypt: Hash, private val validatorUtil: ValidatorUtil) {
+class AuthController(private val authConfig: AuthConfig, private val accountRepository: AccountRepository, private val jwtUtil: JwtUtil, private val bcrypt: Hash, private val validatorUtil: ValidatorService) {
 
     @GetMapping("/me")
     fun me(): ResponseEntity<Any> {
@@ -43,10 +45,16 @@ class AuthController(private val authConfig: AuthConfig, private val userReposit
             mapOf(
                 "success" to true,
                 "id" to user.id,
+                "typeAccount" to user.typeAccount,
+                "profileImageUrl" to user.profileImageUrl,
+                "cpf" to user.cpf,
+                "fullName" to user.fullName,
                 "username" to user.username,
                 "email" to user.email,
-                "role" to user.role.name,
+                "phone" to user.phone,
+                "rating" to user.rating,
                 "plan" to user.plan,
+                "role" to user.role.name,
                 "banned" to user.banned,
                 "bannedAt" to user.bannedAt,
                 "createdAt" to user.createdAt,
@@ -57,12 +65,12 @@ class AuthController(private val authConfig: AuthConfig, private val userReposit
 
     @PostMapping("/sign-up")
     fun signUp(@RequestBody request: UserSignUpSchema): ResponseEntity<Any> {
-/*        val cleanedCpf = validatorUtil.cleanCpf(request.cpf)
+        val cleanedCpf = validatorUtil.cleanCpf(request.cpf)
 
         if (!validatorUtil.isValidCpf(cleanedCpf)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(mapOf("success" to false, "message" to "É necessário inserir um número de CPF que seja válido."))
-        }*/
+        }
 
         if (request.username.length < authConfig.minUsernameLength || request.username.length > authConfig.maxUsernameLength) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -74,42 +82,58 @@ class AuthController(private val authConfig: AuthConfig, private val userReposit
                 .body(mapOf("success" to false, "message" to "É necessário inserir um endereço de email que seja válido."))
         }
 
-/*        if (!validatorUtil.isValidPhone(request.phone)) {
+        if (!validatorUtil.isValidPhone(request.phone)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(mapOf("success" to false, "message" to "É necessário inserir um número de telefone que seja válido."))
-        }*/
+        }
 
         if (request.password.length < authConfig.minPasswordLength || request.password.length > authConfig.maxPasswordLength) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(mapOf("success" to false, "message" to "A senha deve conter no mínimo ${authConfig.minPasswordLength} caracteres, e no máximo ${authConfig.maxPasswordLength} caracteres."))
         }
 
-//        val existingCpf = userRepository.findByCpf(cleanedCpf)
-        val existingUsername = userRepository.findByUsername(request.username)
-        val existingEmail = userRepository.findByEmail(request.email)
-//        val existingPhone = userRepository.findByPhone(request.phone)
+        val existingCpf = accountRepository.findByCpf(cleanedCpf)
+        val existingUsername = accountRepository.findByUsername(request.username)
+        val existingEmail = accountRepository.findByEmail(request.email)
+        val existingPhone = accountRepository.findByPhone(request.phone)
 
-//        checkDuplicate(existingCpf, "Já existe uma conta registrada com este número de CPF.")?.let { return it }
+        checkDuplicate(existingCpf, "Já existe uma conta registrada com este número de CPF.")?.let { return it }
         checkDuplicate(existingUsername, "Já existe uma conta registrada com este nome de usuário.")?.let { return it }
         checkDuplicate(existingEmail, "Já existe uma conta registrada com este endereço de email.")?.let { return it }
-//        checkDuplicate(existingPhone, "Já existe uma conta registrada com este número de telefone.")?.let { return it }
+        checkDuplicate(existingPhone, "Já existe uma conta registrada com este número de telefone.")?.let { return it }
+
+        if (request.typeAccount == TypeAccount.PROVIDER && (request.fotoSelfie.isNullOrBlank() || request.fotoRgFrente.isNullOrBlank() || request.fotoRgVerso.isNullOrBlank())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(mapOf("success" to false, "message" to "Para se registrar como prestador, o envio das fotos de segurança é obrigatório."))
+        }
+
+        val accountStatus = if (request.typeAccount == TypeAccount.PROVIDER) {
+            AccountStatus.PENDING
+        } else {
+            AccountStatus.APPROVED
+        }
 
         val user = User(
-//            cpf = cleanedCpf,
-//            name = request.name,
+            typeAccount = request.typeAccount,
+            cpf = cleanedCpf,
+            fullName = request.fullName,
             username = request.username,
             email = request.email,
-//            phone = request.phone,
-            hashedPassword = bcrypt.encodePassword(request.password)
+            phone = request.phone,
+            hashedPassword = bcrypt.encodePassword(request.password),
+            fotoSelfie = request.fotoSelfie,
+            fotoRgFrente = request.fotoRgFrente,
+            fotoRgVerso = request.fotoRgVerso,
+            accountStatus = accountStatus
         )
 
-        userRepository.save(user)
+        accountRepository.save(user)
         return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("success" to true, "message" to "Conta registrada com sucesso."))
     }
 
     @PostMapping("/sign-in")
     fun signIn(@RequestBody request: UserSignInSchema): ResponseEntity<Any> {
-        val user = userRepository.findByUsernameOrEmail(request.login, request.login)
+        val user = accountRepository.findByUsernameOrEmail(request.login, request.login)
             ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(mapOf("success" to false, "message" to "Usuário ou senha incorretos."))
 
@@ -129,7 +153,7 @@ class AuthController(private val authConfig: AuthConfig, private val userReposit
             user.bannedAt = null
             user.banExpiresAt = null
             user.failedLoginAttempts = 0
-            userRepository.save(user)
+            accountRepository.save(user)
         }
 
         if (user.banned && user.banExpiresAt == null) {
@@ -148,19 +172,19 @@ class AuthController(private val authConfig: AuthConfig, private val userReposit
                 user.banned = true
                 user.bannedAt = now
                 user.banExpiresAt = now.plusMinutes(authConfig.lockoutMinutes)
-                userRepository.save(user)
+                accountRepository.save(user)
 
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(mapOf("success" to false, "message" to "Conta bloqueada devido a tentativas excessivas."))
             }
 
-            userRepository.save(user)
+            accountRepository.save(user)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(mapOf("success" to false, "message" to "Usuário ou senha incorretos."))
         }
 
         user.failedLoginAttempts = 0
-        userRepository.save(user)
+        accountRepository.save(user)
 
         val token = jwtUtil.generateToken(user.username, user.tokenVersion)
 
@@ -180,7 +204,7 @@ class AuthController(private val authConfig: AuthConfig, private val userReposit
         val user = principal.user
 
         user.tokenVersion += 1
-        userRepository.save(user)
+        accountRepository.save(user)
 
         SecurityContextHolder.clearContext()
 

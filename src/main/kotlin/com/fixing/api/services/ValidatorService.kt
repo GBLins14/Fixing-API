@@ -1,9 +1,9 @@
-package com.fixing.api.utils
+package com.fixing.api.services
 
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
-@Component
-class ValidatorUtil {
+@Service
+class ValidatorService {
     private val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     private val cpfRegex = "^\\d{11}$".toRegex()
     private val phoneRegex = "^\\d{10,11}$".toRegex()

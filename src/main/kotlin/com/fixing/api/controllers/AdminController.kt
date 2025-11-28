@@ -1,9 +1,9 @@
 package com.fixing.api.controllers
 
 import com.fixing.api.models.CustomUserDetails
-import com.fixing.api.models.Plan
-import com.fixing.api.models.Role
-import com.fixing.api.repositories.UserRepository
+import com.fixing.api.enums.Plan
+import com.fixing.api.enums.Role
+import com.fixing.api.repositories.AccountRepository
 import com.fixing.api.schemas.BanAccountSchema
 import com.fixing.api.schemas.UserSetRoleSchema
 import com.fixing.api.schemas.UserSetPlanSchema
@@ -17,12 +17,12 @@ import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/admin")
-class AdminAccountController(private val userRepository: UserRepository, private val requireAdminService: RequireAdminService, private val bcrypt: Hash) {
+class AdminAccountController(private val accountRepository: AccountRepository, private val requireAdminService: RequireAdminService, private val bcrypt: Hash) {
 
     @GetMapping(value = ["/accounts", "/accounts/{login}"])
     fun getAccount(@PathVariable(required = false) login: String?): ResponseEntity<Any> {
         return if (login != null) {
-            val account = userRepository.findByUsernameOrEmail(login, login)
+            val account = accountRepository.findByUsernameOrEmail(login, login)
             return if (account != null) {
                 ResponseEntity.ok(mapOf(
                     "success" to true,
@@ -32,7 +32,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
             }
         } else {
-            val accounts = userRepository.findAll()
+            val accounts = accountRepository.findAll()
             ResponseEntity.ok(mapOf(
                 "success" to true,
                 "account" to accounts
@@ -42,7 +42,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
 
     @PatchMapping("/accounts/role")
     fun setRole(@RequestBody request: UserSetRoleSchema): ResponseEntity<Any> {
-        val accountReq = userRepository.findByUsernameOrEmail(request.login, request.login)
+        val accountReq = accountRepository.findByUsernameOrEmail(request.login, request.login)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
 
         if (accountReq.role == request.role) {
@@ -50,7 +50,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
         }
 
         accountReq.role = request.role
-        userRepository.save(accountReq)
+        accountRepository.save(accountReq)
 
         return ResponseEntity.ok(
             mapOf(
@@ -71,7 +71,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
 
     @PatchMapping("/accounts/plan")
     fun setRole(@RequestBody request: UserSetPlanSchema): ResponseEntity<Any> {
-        val accountReq = userRepository.findByUsernameOrEmail(request.login, request.login)
+        val accountReq = accountRepository.findByUsernameOrEmail(request.login, request.login)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
 
         if (accountReq.plan == request.plan) {
@@ -79,7 +79,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
         }
 
         accountReq.plan = request.plan
-        userRepository.save(accountReq)
+        accountRepository.save(accountReq)
 
         return ResponseEntity.ok(
             mapOf(
@@ -100,7 +100,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
 
     @PatchMapping("/accounts/ban")
     fun banAccount(@RequestBody request: BanAccountSchema): ResponseEntity<Any> {
-        val accountReq = userRepository.findByUsernameOrEmail(request.login, request.login)
+        val accountReq = accountRepository.findByUsernameOrEmail(request.login, request.login)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(mapOf("success" to false, "message" to "Conta não encontrada."))
 
@@ -111,7 +111,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
             accountReq.banExpiresAt = null
 
             accountReq.tokenVersion += 1
-            userRepository.save(accountReq)
+            accountRepository.save(accountReq)
 
             val auth = SecurityContextHolder.getContext().authentication
             val principal = auth?.principal
@@ -136,7 +136,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
         accountReq.banExpiresAt = banExpiresAt
 
         accountReq.tokenVersion += 1
-        userRepository.save(accountReq)
+        accountRepository.save(accountReq)
 
         val auth = SecurityContextHolder.getContext().authentication
         val principal = auth?.principal
@@ -155,7 +155,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
 
     @PatchMapping("/accounts/unban/{login}")
     fun unbanAccount(@PathVariable login: String): ResponseEntity<Any> {
-        val accountReq = userRepository.findByUsernameOrEmail(login, login)
+        val accountReq = accountRepository.findByUsernameOrEmail(login, login)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
 
         if (!accountReq.banned) {
@@ -165,7 +165,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
         accountReq.banned = false
         accountReq.bannedAt = null
         accountReq.banExpiresAt = null
-        userRepository.save(accountReq)
+        accountRepository.save(accountReq)
 
         return ResponseEntity.ok(
             mapOf(
@@ -177,7 +177,7 @@ class AdminAccountController(private val userRepository: UserRepository, private
 
     @GetMapping("/accounts/bans")
     fun getBans(): ResponseEntity<Any> {
-        val accountsBanned = userRepository.findByBanned(true)
+        val accountsBanned = accountRepository.findByBanned(true)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Nenhuma conta banida encontrada."))
         return ResponseEntity.ok(mapOf(
             "success" to true,
@@ -187,10 +187,10 @@ class AdminAccountController(private val userRepository: UserRepository, private
 
     @DeleteMapping("/accounts/{login}")
     fun delAccount(@PathVariable login: String): ResponseEntity<Any> {
-        val accountReq = userRepository.findByUsernameOrEmail(login, login)
+        val accountReq = accountRepository.findByUsernameOrEmail(login, login)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
 
-        userRepository.delete(accountReq)
+        accountRepository.delete(accountReq)
 
         return ResponseEntity.ok(
             mapOf(

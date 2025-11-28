@@ -1,7 +1,7 @@
 package com.fixing.api.security
 
 import com.fixing.api.models.CustomUserDetails
-import com.fixing.api.repositories.UserRepository
+import com.fixing.api.repositories.AccountRepository
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 @Component
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
-    private val userRepository: UserRepository
+    private val accountRepository: AccountRepository
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -31,7 +31,7 @@ class JwtAuthenticationFilter(
         if (token != null && jwtUtil.validateToken(token)) {
 
             val username = jwtUtil.getUsername(token)
-            val user = userRepository.findByUsername(username)
+            val user = accountRepository.findByUsername(username)
 
             if (user != null) {
 
@@ -57,7 +57,7 @@ class JwtAuthenticationFilter(
                         user.bannedAt = null
                         user.banExpiresAt = null
                         user.failedLoginAttempts = 0
-                        userRepository.save(user)
+                        accountRepository.save(user)
                     }
                 }
 
