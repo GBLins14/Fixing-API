@@ -21,8 +21,6 @@ repositories {
 
 dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.1.5")

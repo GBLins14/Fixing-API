@@ -54,7 +54,7 @@ fun checkDuplicate(value: Any?, message: String): ResponseEntity<Any>? {
 @RestController
 @RequestMapping("/auth")
 class AccountController(private val authConfig: AuthConfig, private val userRepository: UserRepository, private val jwtUtil: JwtUtil, private val bcrypt: Hash) {
-    
+
     @GetMapping("/me")
     fun me(): ResponseEntity<Any> {
         val auth = SecurityContextHolder.getContext().authentication
