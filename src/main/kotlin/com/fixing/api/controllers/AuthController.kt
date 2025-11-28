@@ -54,23 +54,7 @@ fun checkDuplicate(value: Any?, message: String): ResponseEntity<Any>? {
 @RestController
 @RequestMapping("/auth")
 class AccountController(private val authConfig: AuthConfig, private val userRepository: UserRepository, private val jwtUtil: JwtUtil, private val bcrypt: Hash) {
-    @GetMapping("/role/{id}/{role}")// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    fun role(@PathVariable id: Long, @PathVariable role: Role): ResponseEntity<Any> { // REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        val accountReq = userRepository.findById(id).orElse(null)// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
-// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (accountReq.role == role) {// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("success" to false, "message" to "A conta já está com este cargo."))
-        }// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        accountReq.role = role// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        userRepository.save(accountReq)// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        return ResponseEntity.ok(// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            mapOf("success" to true, "message" to "Cargo setado com sucesso. ID: $id, Cargo: $role")// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        )// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    }// REMOVER FUNÇÃO DEPOIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+    
     @GetMapping("/me")
     fun me(): ResponseEntity<Any> {
         val auth = SecurityContextHolder.getContext().authentication
