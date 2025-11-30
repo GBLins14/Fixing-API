@@ -20,7 +20,7 @@ Crie um arquivo .env com:
 DB_URL=, DB_USERNAME=, DB_PASSWORD=, JWT_SECRET=, JWT_EXPIRATION_MS=
 
 ▶️ Como Rodar o Projeto:
-./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=dev'
 
 📄 Licença:
 Projeto proprietário — uso restrito. Entre em contato para permissões.
