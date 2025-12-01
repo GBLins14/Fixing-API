@@ -1,9 +1,11 @@
 package com.fixing.api.controllers
 
+import com.fixing.api.enums.AccountStatus
 import com.fixing.api.models.CustomUserDetails
 import com.fixing.api.enums.Plan
 import com.fixing.api.enums.Role
 import com.fixing.api.repositories.AccountRepository
+import com.fixing.api.schemas.AccountsListSchema
 import com.fixing.api.schemas.BanAccountSchema
 import com.fixing.api.schemas.UserSetRoleSchema
 import com.fixing.api.schemas.UserSetPlanSchema
@@ -19,24 +21,43 @@ import java.time.LocalDateTime
 @RequestMapping("/admin")
 class AdminAccountController(private val accountRepository: AccountRepository, private val requireAdminService: RequireAdminService, private val bcrypt: Hash) {
 
-    @GetMapping(value = ["/accounts", "/accounts/{login}"])
-    fun getAccount(@PathVariable(required = false) login: String?): ResponseEntity<Any> {
-        return if (login != null) {
-            val account = accountRepository.findByUsernameOrEmail(login, login)
-            return if (account != null) {
-                ResponseEntity.ok(mapOf(
+    @GetMapping("/accounts")
+    fun getAccounts(): ResponseEntity<Any> {
+        val accounts = accountRepository.findAll()
+        return ResponseEntity.ok(mapOf(
+            "success" to true,
+            "accounts" to accounts
+        ))
+    }
+
+    @GetMapping("/accounts/pendant")
+    fun getPendantAccounts(): ResponseEntity<Any> {
+        val accounts = accountRepository.findByAccountStatus(AccountStatus.PENDING)
+
+        if (accounts.isNullOrEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Nenhuma conta pendente encontrada."))
+        }
+
+        return ResponseEntity.ok(mapOf(
+            "success" to true,
+            "accounts" to accounts
+            )
+        )
+    }
+
+    @GetMapping("/account")
+    fun getAccount(@RequestBody request: AccountsListSchema): ResponseEntity<Any> {
+        val account = accountRepository.findByUsernameOrEmail(request.login, request.login)
+        return if (account != null) {
+            ResponseEntity.ok(
+                mapOf(
                     "success" to true,
                     "account" to account
-                ))
-            } else {
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("success" to false, "message" to "Conta não encontrada."))
-            }
+                )
+            )
         } else {
-            val accounts = accountRepository.findAll()
-            ResponseEntity.ok(mapOf(
-                "success" to true,
-                "account" to accounts
-            ))
+            ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(mapOf("success" to false, "message" to "Conta não encontrada."))
         }
     }
 

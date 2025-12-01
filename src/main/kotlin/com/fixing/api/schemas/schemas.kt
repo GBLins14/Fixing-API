@@ -38,3 +38,7 @@ data class UserSetPlanSchema(
     val login: String,
     val plan: Plan
 )
+
+data class AccountsListSchema(
+    val login: String
+)

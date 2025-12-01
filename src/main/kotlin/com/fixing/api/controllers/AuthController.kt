@@ -107,10 +107,22 @@ class AuthController(private val authConfig: AuthConfig, private val accountRepo
                 .body(mapOf("success" to false, "message" to "Para se registrar como prestador, o envio das fotos de segurança é obrigatório."))
         }
 
-        val accountStatus = if (request.typeAccount == TypeAccount.PROVIDER) {
-            AccountStatus.PENDING
-        } else {
-            AccountStatus.APPROVED
+        val accountStatus = when (request.typeAccount) {
+            TypeAccount.PROVIDER -> {
+                AccountStatus.PENDING
+            }
+            TypeAccount.CLIENT -> {
+                AccountStatus.APPROVED
+            }
+            else -> {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(
+                        mapOf(
+                            "success" to false,
+                            "message" to "Para se registrar como Fixing Team, é necessario ter permissão."
+                        )
+                    )
+            }
         }
 
         val user = User(

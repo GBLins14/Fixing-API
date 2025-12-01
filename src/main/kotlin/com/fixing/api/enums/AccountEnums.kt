@@ -1,7 +1,7 @@
 package com.fixing.api.enums
 
 enum class TypeAccount {
-    CLIENT, PROVIDER
+    CLIENT, PROVIDER, FX_TEAM
 }
 
 enum class Role {

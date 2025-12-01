@@ -53,13 +53,13 @@ data class User(
     @Enumerated(EnumType.STRING)
     var role: Role = Role.USER,
 
-    @Column(name = "fotoSelfie", nullable = false)
+    @Column(name = "fotoSelfie")
     var fotoSelfie: String? = null,
 
-    @Column(name = "fotoRg_F", nullable = false)
+    @Column(name = "fotoRg_F")
     var fotoRgFrente: String? = null,
 
-    @Column(name = "fotoRg_V", nullable = false)
+    @Column(name = "fotoRg_V")
     var fotoRgVerso: String? = null,
 
     @Column(name = "accountStatus", nullable = false)
